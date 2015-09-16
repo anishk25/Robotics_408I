@@ -4,7 +4,7 @@
 #define COUNTS_PER_REV 4480 // (gear_ratio * 64)
 
 Encoder leftWheel(2,4);
-Encoder righWheel(3,5);
+Encoder rightWheel(3,5);
 
 DualMC33926MotorShield motorShield;
 
@@ -14,21 +14,29 @@ long right_wheel_pos = -999;
 float num_left_revs = 0;
 float num_right_revs = 0;
 
+const float revs_for_turns = 0.25f;
+boolean isMotor1Running = true;
+boolean isMotor2Running = true;
+
 void setup() {
    Serial.begin(9600);
    leftWheel.write(0);
    rightWheel.write(0);
+
+   // start motor one goes forward, one goes backward
+   motorShield.setM1Speed(-100);
+   motorShield.setM2Speed(100);
 }
 
 void loop() {
   if (Serial.available()) {
     Serial.read();
     Serial.println("Reset wheel to zero");
-    wheel.write(0);
-    wheel.write(0);
+    leftWheel.write(0);
+    rightWheel.write(0);
   }
   readEncoder();
-  
+  checkIfTurnCompleted();
 }
 
 
@@ -43,4 +51,12 @@ void readEncoder(){
      num_right_revs = ((float)right_wheel_pos)/COUNTS_PER_REV;
   }
 }
+
+void checkIfTurnCompleted(){
+   if(isMotor1Running){
+      if(num_left_revs)
+   }
+}
+
+
 
