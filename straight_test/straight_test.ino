@@ -5,9 +5,19 @@
 #define POWER_PIN_LEFT_WHEEL 9
 #define COUNTS_PER_REV 4480
 
+
+const int kp = 4;
+
+// M1: right
+// M2 : left
+// master: right/M1
+// slave: left/M2
+
+int masterPower = 300;
+int slavePower = 300;
+
 Encoder rightWheel(2,6);
 Encoder leftWheel(3,5);
-
 
 DualMC33926MotorShield motorShield;
 
@@ -17,23 +27,39 @@ float right_num_revs = 0;
 float left_num_revs = 0;
 
 void setup() {
-  Serial.begin(115200);
-  //rightWheel.write(0);
   pinMode(POWER_PIN_RIGHT_WHEEL,OUTPUT);
   digitalWrite(POWER_PIN_RIGHT_WHEEL, HIGH);
 
   pinMode(POWER_PIN_LEFT_WHEEL,OUTPUT);
   digitalWrite(POWER_PIN_LEFT_WHEEL, HIGH);
   
-  //M1 is right, M2 is left
   motorShield.init();
-  motorShield.setM1Speed(100);
-  motorShield.setM2Speed(100);
+  motorShield.setM1Speed(masterPower);
+  //motorShield.setM2Speed(slavePower);
+
+  resetEncoders();
 }
 
+
+
 void loop() {
-  // put your main code here, to run repeatedly:
   readEncoder();
+  adjustMotorPowers();
+  motorShield.setM2Speed(slavePower);
+}
+
+void adjustMotorPowers(){
+  int error = right_wheel_pos - left_wheel_pos;
+  slavePower -= error/kp;
+  resetEncoders();
+  delay(100);
+}
+
+void resetEncoders(){
+  rightWheel.write(0);
+  leftWheel.write(0);
+  right_wheel_pos = 0;
+  left_wheel_pos = 0;
 }
 
 void readEncoder(){
@@ -43,14 +69,8 @@ void readEncoder(){
   if(new_right_pos != right_wheel_pos || new_left_pos != left_wheel_pos){
      right_wheel_pos = new_right_pos;
      right_num_revs = (float)right_wheel_pos/COUNTS_PER_REV;
-
      left_wheel_pos = new_left_pos;
      left_num_revs =  (float)left_wheel_pos/COUNTS_PER_REV;
-
-
-     Serial.print(right_num_revs);
-     Serial.print("\t");
-     Serial.println(left_num_revs);
-
   }
 }
+
