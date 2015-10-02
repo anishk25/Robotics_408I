@@ -23,6 +23,16 @@ int rotate_direction = ROTATE_LEFT;
 
 DualMC33926MotorShield motorShield;
 
+enum State {ROTATE, MOVE_FORWARD, NONE_SEE};
+
+State currState = ROTATE;
+State nextState = ROTATE;
+
+int leftMotorSpeed = DEFAULT_MOTOR_SPEED;
+int rightMotorSpeed = -DEFAULT_MOTOR_SPEED;
+
+
+
 // M1: right
 // M2 : left
 
@@ -34,9 +44,6 @@ void setup() {
   pinMode(POWER_PIN_LEFT_WHEEL,OUTPUT);
   digitalWrite(POWER_PIN_LEFT_WHEEL, HIGH);
   motorShield.init();
-
-  //motorShield.setM1Speed(DEFAULT_MOTOR_SPEED);
-  //motorShield.setM2Speed(-DEFAULT_MOTOR_SPEED);
   
 }
 
@@ -58,34 +65,41 @@ void followIREmitter(){
     right_ir_value /= IR_MES_LIMIT;
     left_ir_value /= IR_MES_LIMIT;
 
-    Serial.print("left:");
-    Serial.print(left_ir_value);
-    Serial.print("\t");
-    Serial.print("right:");
-    Serial.println(right_ir_value);
+    currState = nextState;
 
-    
-    if(right_ir_value > IR_THRESHOLD && left_ir_value > IR_THRESHOLD){
-      // stop rotating
-      motorShield.setM1Speed(DEFAULT_MOTOR_SPEED-50);
-      motorShield.setM2Speed(DEFAULT_MOTOR_SPEED-50);
-    }else if(right_ir_value < IR_THRESHOLD && left_ir_value < IR_THRESHOLD){
-       motorShield.setM1Speed(rotate_direction * DEFAULT_MOTOR_SPEED);
-       motorShield.setM2Speed(rotate_direction *-DEFAULT_MOTOR_SPEED);
-    }else{
-       int error = right_ir_value - left_ir_value;
-       if(error > 0){
-          rotate_direction = ROTATE_RIGHT;
-       }else{
-          rotate_direction = ROTATE_LEFT;
-       }
-       int motor_speed = error * wheelPowerGain;
-       motorShield.setM1Speed(-motor_speed);
-       motorShield.setM2Speed(motor_speed);
+    switch(currState){
+      case ROTATE:
+           if(right_ir_value > IR_THRESHOLD && left_ir_value > IR_THRESHOLD){
+                nextState = MOVE_FORWARD;
+           }else if(right_ir_value < IR_THRESHOLD && left_ir_value < IR_THRESHOLD){
+                nextState = NONE_SEE;
+           }else{
+                int error = right_ir_value - left_ir_value;
+                if(error > 0){
+                  rotate_direction = ROTATE_RIGHT;
+                }else{
+                  rotate_direction = ROTATE_LEFT;
+                }
+                int motor_speed = error * wheelPowerGain;
+                leftMotorSpeed = motor_speed;
+                rightMotorSpeed = -motor_speed;
+           }
+           break;
+      case MOVE_FORWARD:
+                leftMotorSpeed = DEFAULT_MOTOR_SPEED;
+                rightMotorSpeed = DEFAULT_MOTOR_SPEED;
+                nextState = ROTATE;
+                break; 
+      case NONE_SEE:
+                leftMotorSpeed = rotate_direction * -DEFAULT_MOTOR_SPEED;
+                rightMotorSpeed = rotate_direction * DEFAULT_MOTOR_SPEED;
+                nextState = ROTATE;
+           break;
     }
-    //Serial.print("motor speed after:");
-    //Serial.println(motor_speed);
-    delay(20);
+
+    motorShield.setM1Speed(rightMotorSpeed);
+    motorShield.setM2Speed(leftMotorSpeed);
+    delay(1);
 }
 
 

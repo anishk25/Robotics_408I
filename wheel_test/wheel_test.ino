@@ -47,7 +47,6 @@ void readEncoder(){
      left_wheel_pos = new_left_pos;
      left_num_revs =  (float)left_wheel_pos/COUNTS_PER_REV;
 
-
      Serial.print(right_num_revs);
      Serial.print("\t");
      Serial.println(left_num_revs);
