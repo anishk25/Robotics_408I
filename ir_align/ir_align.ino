@@ -9,8 +9,12 @@
 #define IR_THRESHOLD 100
 
 #define DEFAULT_MOTOR_SPEED 250
+#define FOUND_ONE_MOTOR_SPEED 150
 
 #define IR_MES_LIMIT 100
+
+#define PS_16  (1 << ADPS2)
+#define PS_128 (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0)
 
 #define ROTATE_LEFT 1
 #define ROTATE_RIGHT -1
@@ -44,7 +48,9 @@ void setup() {
   pinMode(POWER_PIN_LEFT_WHEEL,OUTPUT);
   digitalWrite(POWER_PIN_LEFT_WHEEL, HIGH);
   motorShield.init();
-  
+
+  ADCSRA &= ~PS_128;
+  ADCSRA |= PS_16;  
 }
 
 void loop() {
@@ -77,12 +83,17 @@ void followIREmitter(){
                 int error = right_ir_value - left_ir_value;
                 if(error > 0){
                   rotate_direction = ROTATE_RIGHT;
+                  leftMotorSpeed = FOUND_ONE_MOTOR_SPEED;
+                  rightMotorSpeed = -FOUND_ONE_MOTOR_SPEED;
                 }else{
                   rotate_direction = ROTATE_LEFT;
+                  leftMotorSpeed = -FOUND_ONE_MOTOR_SPEED;
+                  rightMotorSpeed = FOUND_ONE_MOTOR_SPEED;
                 }
-                int motor_speed = error * wheelPowerGain;
-                leftMotorSpeed = motor_speed;
-                rightMotorSpeed = -motor_speed;
+                //int motor_speed = error * wheelPowerGain;
+                //leftMotorSpeed = motor_speed;
+                //rightMotorSpeed = -motor_speed;
+             
            }
            break;
       case MOVE_FORWARD:
