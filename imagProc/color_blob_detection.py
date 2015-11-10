@@ -75,6 +75,10 @@ def convertRGBColorToHSV(colorScalar):
 	print hsv_img[0,0]
 	return hsv_img[0,0]
 
+def checkForTriangles(contours):
+	for cnt in contours:
+		approx = cv2.approxPolyDP(cnt,0.05*cv2.arcLength(cnt,True),True)
+		print len(approx)
 
 
 videoCap = cv2.VideoCapture(0)
@@ -93,8 +97,8 @@ while(True):
 	hChannelImg = getHSVChannel(frame,0)
 	sChannelImg = getHSVChannel(frame,1)
 
-	blurredHImg = cv2.GaussianBlur(hChannelImg,(11,11),0,0);
-	blurredSImg = cv2.GaussianBlur(sChannelImg,(11,11),0,0);
+	blurredHImg = cv2.GaussianBlur(hChannelImg,(11,11),0,0)
+	blurredSImg = cv2.GaussianBlur(sChannelImg,(11,11),0,0)
 
 
 	hThreshImg = cv2.inRange(blurredHImg,4,7)
@@ -104,7 +108,8 @@ while(True):
 	corners = cv2.cornerHarris(erodedDilImg,2,3,0.04);
 
 	contours, hierarchy = cv2.findContours(erodedDilImg,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-	filterCont = filterContours(contours,MIN_CONTOUR_AREA);
+	filterCont = filterContours(contours,MIN_CONTOUR_AREA)	
+	checkForTriangles(filterCont)
 
 	#cv2.drawContours(frame,filterCont,-1,(0,255,0),2)
 	drawAngleOfContours(filterCont,frame)
