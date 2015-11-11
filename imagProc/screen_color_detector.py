@@ -42,7 +42,8 @@ def getSubArray(arr,size,x,y):
 
 def frameClickEvent(event,x,y,flags,param):
 	if event == cv2.EVENT_LBUTTONUP:
-		subFrame = getSubArray(frame,4,x,y)
+		blurredFrame = cv2.GaussianBlur(frame,(11,11),0,0)
+		subFrame = getSubArray(blurredFrame,4,x,y)
 		shape = subFrame.shape
 		numRows = shape[0]
 		numCols = shape[1]
@@ -71,6 +72,7 @@ if(videoCap.isOpened() != True):
 
 while(True):
 	ret,frame = videoCap.read()
+
 	cv2.imshow('frame',frame)
 	if(cv2.waitKey(1) & 0xFF == ord('q')):
 		break

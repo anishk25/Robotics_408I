@@ -25,11 +25,6 @@ CENTER_OF_FRAME = (FRAME_WIDTH/2,FRAME_HEIGHT/2)
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 
 
-def getHSVChannel(img,index):
-	imgHSV = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
-	return imgHSV[:,:,index]
-
-
 def filterContours(contours,minArea):
 	filteredContours = []
 	for contour in contours:
@@ -94,26 +89,22 @@ kernel = np.ones((6,6),np.uint8)
 
 while(True):
 	ret,frame = videoCap.read()
-	hChannelImg = getHSVChannel(frame,0)
-	sChannelImg = getHSVChannel(frame,1)
 
-	blurredHImg = cv2.GaussianBlur(hChannelImg,(11,11),0,0)
-	blurredSImg = cv2.GaussianBlur(sChannelImg,(11,11),0,0)
+	imgHSV = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
+	blurredImg = cv2.GaussianBlur(imgHSV,(11,11),0,0)
+	threshImg = cv2.inRange(blurredImg,np.array([4,155,0]),np.array([7,255,255]))
 
-
-	hThreshImg = cv2.inRange(blurredHImg,4,7)
-	sThreshImg = cv2.inRange(blurredSImg,155,255)
-	combImg = cv2.bitwise_and(hThreshImg,sThreshImg)
-	erodedDilImg = cv2.morphologyEx(combImg, cv2.MORPH_OPEN, kernel)
+	erodedDilImg = cv2.morphologyEx(threshImg, cv2.MORPH_OPEN, kernel)
 	corners = cv2.cornerHarris(erodedDilImg,2,3,0.04);
 
 	contours, hierarchy = cv2.findContours(erodedDilImg,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 	filterCont = filterContours(contours,MIN_CONTOUR_AREA)	
-	checkForTriangles(filterCont)
+	#checkForTriangles(filterCont)
 
 	#cv2.drawContours(frame,filterCont,-1,(0,255,0),2)
 	drawAngleOfContours(filterCont,frame)
 
+	#cv2.imshow('threshImg',threshImg)
 	cv2.imshow('frame',frame)
 	if(cv2.waitKey(1) & 0xFF == ord('q')):
 		break
