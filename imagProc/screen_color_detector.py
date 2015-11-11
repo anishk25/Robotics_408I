@@ -54,6 +54,8 @@ def frameClickEvent(event,x,y,flags,param):
 
 		avgColor = np.array([avgBlue,avgRed,avgGreen])
 		avgHSVColor = convertRGBColorToHSV(avgColor)
+
+		
 		print avgHSVColor
 
 
