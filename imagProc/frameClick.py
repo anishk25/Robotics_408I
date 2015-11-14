@@ -1,15 +1,6 @@
-import numpy as np
+
 import cv2
-import math
-
-CV_CAP_PROP_FRAME_WIDTH = 3
-CV_CAP_PROP_FRAME_HEIGHT = 4 
-
-FRAME_WIDTH = 640
-FRAME_HEIGHT = 480
-
-frame = None
-
+import numpy as np
 
 def convertRGBColorToHSV(colorScalar):
 	rgb_img = np.zeros((1,1,3),np.uint8)
@@ -17,10 +8,7 @@ def convertRGBColorToHSV(colorScalar):
 	hsv_img = cv2.cvtColor(rgb_img,cv2.COLOR_BGR2HSV)
 	return hsv_img[0,0]
 
-#center sub array around x and y
-#size is the size of the square
 def getSubArray(arr,size,x,y):
-
 	nrd = arr.shape
 	numRows = nrd[0]
 	numCols = nrd[1]
@@ -38,11 +26,10 @@ def getSubArray(arr,size,x,y):
 			subArr[cRow-startY][cCol-startX] = arr[cRow][cCol]
 	return subArr
 
-
-def frameClickEvent(event,x,y,flags,param):
+def frameClickEvent(event,x,y,flags,frame):
 	if event == cv2.EVENT_LBUTTONUP:
-		blurredFrame = cv2.GaussianBlur(frame,(11,11),0,0)
-		subFrame = getSubArray(blurredFrame,4,x,y)
+		blurredFrame = cv2.GaussianBlur(frame,(5,5),0,0)
+		subFrame = getSubArray(blurredFrame,3,x,y)
 		shape = subFrame.shape
 		numRows = shape[0]
 		numCols = shape[1]
@@ -54,28 +41,4 @@ def frameClickEvent(event,x,y,flags,param):
 
 		avgColor = np.array([avgBlue,avgGreen,avgRed])
 		avgHSVColor = convertRGBColorToHSV(avgColor)
-
 		print avgHSVColor
-
-
-videoCap = cv2.VideoCapture(0)
-videoCap.set(CV_CAP_PROP_FRAME_WIDTH,640)
-videoCap.set(CV_CAP_PROP_FRAME_HEIGHT,480)
-
-cv2.namedWindow('frame')
-cv2.setMouseCallback('frame',frameClickEvent)
-
-if(videoCap.isOpened() != True):
-	videoCap.open()
-
-while(True):
-	ret,frame = videoCap.read()
-
-	cv2.imshow('frame',frame)
-	if(cv2.waitKey(1) & 0xFF == ord('q')):
-		break
-
-
-videoCap.release()
-cv2.destroyAllWindows()
-
