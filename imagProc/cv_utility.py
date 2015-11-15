@@ -29,6 +29,15 @@ def drawCirclesForContours(img,contours):
 		center_in = (int(center[0]),int(center[1]))
 		cv2.circle(img,center_in,int(radius),(0,0,255),1)
 
+def getCirclesFromContours(contours):
+	circleList = []
+	for contr in contours:
+		center,radius = getCircleFromContour(contr)
+		center_in = (int(center[0]),int(center[1]))
+		radius_in = int(radius)
+		circleList.append((center_in,radius_in))
+	return circleList
+
 def getCenterOfContours(contours):
 	centerLst = []
 	for contr in contours:

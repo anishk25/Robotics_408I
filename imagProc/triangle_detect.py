@@ -22,12 +22,18 @@ RED_HIGH_HSV = np.array([20,10,255])
 MIN_CONTOUR_AREA = 10
 MAX_CONTOUR_AREA = 250
 
+
+def getAreaOfCircle(radius):
+	return math.pi * (radius**2)
+
+# gets the distance between two points
 def getDist(pt1,pt2):
 	n1 = (pt2[1] - pt1[1])**2
 	n2 = (pt2[0] - pt1[0])**2
 	return math.sqrt(n1 + n2)
 	
 
+# gets the distance between a line and a point
 def distBetweenLineAndPt(pt,linePt1,linePt2):
 	n1 = (linePt2[1]-linePt1[1])*pt[0]
 	n2 = (linePt2[0]-linePt2[0])*pt[1]
@@ -39,6 +45,7 @@ def distBetweenLineAndPt(pt,linePt1,linePt2):
 	dist = abs(n1 - n2 + n3 - n4)/lineLen
 	return dist
 
+# gets the area of a triangle
 def getAreaOfTriangle(triPts):
 	assert(len(triPts) == 3)
 	n1 = triPts[0][0]*(triPts[1][1] - triPts[2][1])
@@ -47,6 +54,7 @@ def getAreaOfTriangle(triPts):
 	area = abs(n1+n2+n3)/2
 	return area
 
+# gets the closest point to a triangle given a set of points
 def getClosestPt(triPts, allPts):
 	assert(len(triPts) == 3 and len(allPts) > 3)
 	allPtsLen = len(allPts)
@@ -76,12 +84,14 @@ def largestTriangleHelper(allPointsList,trianglePtList,lrgTriPtList,currIndex,nu
 			largestArea = area
 			lrgTriPtList.extend(trianglePtList)
 
+# gets the largest triangle in a given set of points
 def getLargestTriangle(allPointsList):
 	trianglePtList = []
 	lrgTriPtList = []
 	largestTriangleHelper(allPointsList,trianglePtList,lrgTriPtList,0,0)
 	return lrgTriPtList
 
+# sorts the points in the triangle based on the distance from the base point
 def getSortedPtListInTri(basePt,triPts):
 	assert(len(triPts) == 3)
 	distDict = {}
@@ -102,7 +112,33 @@ def drawDirectionalTriangle(img,sortedTriPts):
 	 cv2.line(img,sortedPts[0],sortedPts[2],(0,0,255),2)
 	 cv2.line(img,sortedPts[1],sortedPts[2],(0,0,255),2)
 
+# removes contours that are close to each other
+# given the min distance needed between each contour
+# returns the list of center points for the contours
+def removeCloseContours(contours,minDist):
+	removeIndices = []
+	centerLst = cvUtil.getCenterOfContours(contours)
+	contoursLen = len(contours)
+	for i in range(0,contoursLen):
+		area_i = cv2.contourArea(contours[i])
+		if(centerLst[i][0] >= 0):
+			for j in range(i+1,contoursLen):
+				area_j = cv2.contourArea(contours[j])
+				if(centerLst[i][0] >= 0 and centerLst[j][0] >= 0):
+					dist = getDist(centerLst[i],centerLst[j])
+					if(dist < minDist):
+						if(area_j < area_i):
+							centerLst[j] = (-1,-1)
+							removeIndices.append(j)
+						else:
+							centerLst[i] = (-1,-1)
+							removeIndices.append(i)
+							break
 
+	for index in sorted(removeIndices, reverse=True):
+		del centerLst[index]
+		del contours[index]
+	return centerLst
 
 
 imageFileName = 'blue_top_down.jpg'
@@ -112,21 +148,21 @@ topDownImages = np.array(['blue.jpg','yellow.jpg','red.jpg','purple.jpg','purple
 sideImages = np.array(['blue.jpg','red.jpg','purple.jpg','purple2.jpg'])
 
 
-ledImage = cv2.imread(topDownPrefix+topDownImages[2],cv2.CV_LOAD_IMAGE_COLOR)
+ledImage = cv2.imread(topDownPrefix+topDownImages[1],cv2.CV_LOAD_IMAGE_COLOR)
 imgShape = ledImage.shape
 aspectRatio = float(imgShape[1])/float(imgShape[0])
 newHeight = 700
 newWidth = int(newHeight*aspectRatio)
 ledImage = cv2.resize(ledImage,(newWidth,newHeight))
 
-selectLowHSV = RED_LOW_HSV
-selectHighHSV = RED_HIGH_HSV
+selectLowHSV = YELLOW_LOW_HSV
+selectHighHSV = YELLOW_HIGH_HSV
 
 #imgHSV = cv2.cvtColor(ledImage,cv2.COLOR_BGR2HSV)
 #threshImg = cv2.inRange(imgHSV,selectLowHSV,selectHighHSV)
 
 contours = cvUtil.getContoursForColor(ledImage,selectLowHSV,selectHighHSV,MIN_CONTOUR_AREA,MAX_CONTOUR_AREA)
-centerLst = cvUtil.getCenterOfContours(contours)
+centerLst = removeCloseContours(contours,10)
 
 largestArea = 0
 lrgTriPtList = getLargestTriangle(centerLst)
