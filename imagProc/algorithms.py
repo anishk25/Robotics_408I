@@ -40,7 +40,7 @@ def getAreaOfTriangle(triPts):
 
 # gets the closest point to a triangle given a set of points
 def getClosestPt(triPts, allPts):
-	assert(len(triPts) == 3 and len(allPts) > 3)
+	assert(len(triPts) == 3 and len(allPts) >= 3)
 	allPtsLen = len(allPts)
 	pt1 = triPts[0]
 	pt2 = triPts[1]
@@ -140,7 +140,8 @@ def closestPointHelper(allPointsList,currPointList,closestPtsList,currIndex,numP
 
 def getNClosestPoints(points,N):
 	ptsLen = len(points)
-	assert(ptsLen >= N)
+	if(ptsLen < N):
+		return None
 	currPointList = []
 	closestPtsList = []
 	closestPointHelper(points,currPointList,closestPtsList,0,0,N)

@@ -28,7 +28,7 @@ def getSubArray(arr,size,x,y):
 
 def frameClickEvent(event,x,y,flags,frame):
 	if event == cv2.EVENT_LBUTTONUP:
-		cv2.imwrite('./triangleDetect' + str(x)+ '.jpg', frame)
+		#cv2.imwrite('./triangleDetect' + str(x)+ '.jpg', frame)
 		blurredFrame = cv2.GaussianBlur(frame,(5,5),0,0)
 		subFrame = getSubArray(blurredFrame,3,x,y)
 		shape = subFrame.shape
