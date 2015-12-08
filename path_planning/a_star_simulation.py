@@ -1,8 +1,8 @@
 import random
 from a_star import AStar
 
-GRID_HEIGHT = 60
-GRID_WIDTH  = 60
+GRID_HEIGHT = 100
+GRID_WIDTH  = 100
 
 ROBOT_SIZE = (4,4)
 OBSTACLE_SIZE = (2,2)
@@ -14,8 +14,6 @@ def printGrid(grid):
 		for x in range(0,len(grid[y])):
 			if(grid[y][x] == AStar.EMPTY_VAL):
 				print "  ",
-			elif (grid[y][x] == AStar.ROBOT_OCCUP_VAL):
-				print "* ",
 			else:
 				print str(grid[y][x]) + " ",
 		print ""
@@ -59,8 +57,8 @@ def insertFinishPt(finishPtVal,grid,finishPtSize):
 	numCols = len(grid[0])
 	found = False
 	while(found == False):
-		rand_y = random.randint(numRows/2,numRows-finishPtSize[1] - 1)
-		rand_x = random.randint(numCols/2,numCols-finishPtSize[0] - 1)
+		rand_y = random.randint(3*(numRows/4),numRows-finishPtSize[1] - 1)
+		rand_x = random.randint(3*(numCols/4),numCols-finishPtSize[0] - 1)
 		squareGood = True
 		for y in range(rand_y,rand_y+finishPtSize[1]):
 			for x in range(rand_x, rand_x + finishPtSize[0]):
@@ -76,23 +74,30 @@ def insertFinishPt(finishPtVal,grid,finishPtSize):
 
 
 gridValues = [[0 for y in range(GRID_HEIGHT)] for x in range(GRID_WIDTH)]
-robotPos1 = (1,1)
-fillRobotSpace(gridValues,robotPos1,ROBOT_SIZE,AStar.ROBOT_VAL)
+currentRobotPositions = [(1,1,),(5,20),(10,40)]
+numRobots = len(currentRobotPositions)
 
-robotPos2 = (5,20)
-fillRobotSpace(gridValues,robotPos2,ROBOT_SIZE,AStar.ROBOT_VAL)
+for r in range(0,numRobots):
+	fillRobotSpace(gridValues,currentRobotPositions[r],ROBOT_SIZE,r+4)
 
-
-insertObtsacles(30, gridValues, OBSTACLE_SIZE, AStar.OBSTACLE_VAL)
+insertObtsacles(40, gridValues, OBSTACLE_SIZE, AStar.OBSTACLE_VAL)
 goalPos = insertFinishPt(AStar.FINISH_PT_VAL, gridValues,FINISH_PT_SIZE)
-print "Goal Pos is ",
-print goalPos
 
-aStarProb = AStar(gridValues,robotPos1,goalPos,ROBOT_SIZE)
-directions = aStarProb.getDirectionsToGoal()
-aStarProb.fillGridWithDirections(directions)
 
-#aStarProb.robotStartPos = robotPos2
-#directions = aStarProb.getDirectionsToGoal()
-#aStarProb.fillGridWithDirections(directions)
+aStarProb = AStar(gridValues,currentRobotPositions[0],goalPos,ROBOT_SIZE)
+
+NUM_STEPS = 10
+NUM_ITERATIONS = 12
+
+for i in range(0,NUM_ITERATIONS):
+	for r in range(0,numRobots):
+		if(currentRobotPositions[r] != None):
+			aStarProb.robotStartPos = currentRobotPositions[r]
+			aStarProb.robotId = r + 4
+			directions = aStarProb.getDirectionsToGoal()
+			#print directions
+			nextPos = aStarProb.fillGridWithDirections(directions,NUM_STEPS,gridValues)
+			#print nextPos
+			currentRobotPositions[r] = nextPos
+
 printGrid(gridValues)

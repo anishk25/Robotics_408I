@@ -1,5 +1,6 @@
 from util import Directions
 from util import PriorityQueue
+import copy
 
 class AStar:
 	EMPTY_VAL = 0
@@ -13,10 +14,11 @@ class AStar:
 	# the sizes are in format (width, height)
 	# the positions are in format (x,y)
 	def __init__(self,grid,robotPos,goalPos, robotSize):
-		self.grid = grid
+		self.grid = copy.deepcopy(grid)
 		self.robotStartPos = robotPos
 		self.goalPos = goalPos
 		self.robotSize = robotSize
+		self.robotId = 4
 
 	# checks if the passed in position will not hit any obstacles
 	def isLegalPos(self,currPos):
@@ -28,8 +30,9 @@ class AStar:
 		
 			for y in range(currPos[1],currPos[1] + self.robotSize[1]+1):
 				for x in range(currPos[0], currPos[0] + self.robotSize[0]+1):
-					if(self.grid[y][x] == AStar.OBSTACLE_VAL or self.grid[y][x] == AStar.ROBOT_OCCUP_VAL):
-						return False
+					if(self.grid[y][x] != AStar.EMPTY_VAL):
+						if(self.grid[y][x] == AStar.OBSTACLE_VAL or (self.grid[y][x] != AStar.FINISH_PT_VAL and self.grid[y][x] != self.robotId)):
+							return False
 			return True
 		return False
 
@@ -47,11 +50,18 @@ class AStar:
 		return nodes
 
 	def isGoalState(self,currPos):
+		if(self.getDistToGoal(currPos) < 5):
+			return True
+		else:
+			return False
+		'''
 		for y in range(currPos[1], currPos[1] + self.robotSize[1]):
 			for x in range(currPos[0], currPos[0] + self.robotSize[0]):
 				if(self.grid[y][x] == AStar.FINISH_PT_VAL):
 					return True
 		return False
+		'''
+
 
 	def getDistToGoal(self,currPos):
 		x_dist = (currPos[0] - self.goalPos[0])**2
@@ -73,8 +83,8 @@ class AStar:
 			currNode = priorityQueue.pop()
 			currNodePos = currNode[0]
 			if(self.isGoalState(currNodePos)):
-				print "Goal FOUND!!!"
-				print currNodePos
+				#print "Goal FOUND!!!"
+				#rint currNodePos
 				foundGoalPos = currNodePos
 				visitedNodes[currNodePos] = (currNode[1],currNode[2])
 				break
@@ -102,19 +112,24 @@ class AStar:
 		else:
 			return None
 
-	def fillRobotSpace(self,currPos):
+	def fillRobotSpace(self,currPos,grid,val):
 		for y in range(currPos[1], currPos[1] + self.robotSize[1]):
 			for x in range(currPos[0], currPos[0] + self.robotSize[0]):
-				self.grid[y][x] = AStar.ROBOT_OCCUP_VAL
+				grid[y][x] = val
 
-	def fillGridWithDirections(self,directions):
-		if(directions != None):
+	def fillGridWithDirections(self,directions,numWayPoints,grid):
+		if(directions != None and len(directions) >= numWayPoints):
+			#print "FILLING DIRECTIONS!"
 			currPos = self.robotStartPos
-			for direct in directions:
-				#self.grid[currPos[1]][currPos[0]] = AStar.ROBOT_OCCUP_VAL
-				self.fillRobotSpace(currPos)
-				vect = Directions.DIR_VECT_DICT[direct]
+			for i in range(0,numWayPoints):
+				self.fillRobotSpace(currPos,grid,self.robotId)
+				vect = Directions.DIR_VECT_DICT[directions[i]]
 				currPos = (currPos[0]+vect[0],currPos[1]+vect[1])
+
+			self.fillRobotSpace(currPos,self.grid,self.robotId)
+			self.fillRobotSpace(self.robotStartPos,self.grid,AStar.EMPTY_VAL)
+
+			return currPos
 
 
 
