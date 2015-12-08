@@ -8,7 +8,7 @@ import math
 COLOR_MIN = np.array([6,50,50]);
 COLOR_MAX = np.array([14,255,255]);
 
-MIN_CONTOUR_AREA = 1500
+MIN_CONTOUR_AREA = 100
 
 CV_CAP_PROP_FRAME_WIDTH = 3
 CV_CAP_PROP_FRAME_HEIGHT = 4 
@@ -23,7 +23,7 @@ RADIANS_PER_PIX_X = math.radians(CAMERA_ANGLE_OF_VIEW_HORIZ)/FRAME_WIDTH
 DEGRESS_PER_PIX_X = CAMERA_ANGLE_OF_VIEW_HORIZ/FRAME_WIDTH
 CENTER_OF_FRAME = (FRAME_WIDTH/2,FRAME_HEIGHT/2)
 FONT = cv2.FONT_HERSHEY_SIMPLEX
-kernel =np.ones((6,6),np.uint8)
+kernel =np.ones((2,2),np.uint8)
 frame = None
 
 
@@ -104,14 +104,14 @@ while(True):
 	blurredImg = cv2.GaussianBlur(imgHSV,(19,19),0,0)
 
 	# get orange contours
-	o_contours = getContoursForColor(blurredImg,np.array([4,155,0]),np.array([7,255,255]),kernel)
+	o_contours = getContoursForColor(blurredImg,np.array([0,100,200]),np.array([20,160,255]),kernel)
 
 	# get black contours
 	#b_contours = getContoursForColor(blurredImg,np.array([0,0,0]),np.array([255,160,20]),kernel)
 
 
-	#cv2.drawContours(frame,o_contours,-1,(0,255,0),2)
-	drawAngleOfContours(o_contours,frame)
+	cv2.drawContours(frame,o_contours,-1,(0,255,0),2)
+	#drawAngleOfContours(o_contours,frame)
 
 	cv2.imshow('frame',frame)
 	if(cv2.waitKey(1) & 0xFF == ord('q')):

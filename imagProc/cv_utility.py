@@ -23,12 +23,14 @@ def convertRGBColorToHSV(colorScalar):
 	return hsv_img[0,0]
 
 
-def getContoursForColor(img,lowerBound,upperBound,minContourArea,maxContourArea):
+def getContoursForColor(img,lowerBound,upperBound,minContourArea,maxContourArea,dilImage = False):
 	imgHSV = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
 	threshImg = cv2.inRange(imgHSV,lowerBound,upperBound)
-	kernel =np.ones((6,6),np.uint8)
-	erodedDilImg = cv2.morphologyEx(threshImg, cv2.MORPH_OPEN, kernel)
-	contours, hierarchy = cv2.findContours(erodedDilImg,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+	if(dilImage == True):
+		kernel =np.ones((2,2),np.uint8)
+		erodedDilImg = cv2.morphologyEx(threshImg, cv2.MORPH_OPEN, kernel)
+		threshImg = erodedDilImg
+	contours, hierarchy = cv2.findContours(threshImg,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 	filterCont = filterContours(contours,minContourArea,maxContourArea)	
 	return filterCont
 
@@ -40,8 +42,9 @@ def drawCirclesForContours(img,contours):
 		cv2.circle(img,center_in,int(radius),(0,255,0),2)
 
 def drawCircleForPoints(img,pts,radius,color,lineLen):
-	for pt in pts:
-		cv2.circle(img,pt,radius,color,lineLen)
+	if(pts != None):
+		for pt in pts:
+			cv2.circle(img,pt,radius,color,lineLen)
 
 def getCirclesFromContours(contours):
 	circleList = []
@@ -60,5 +63,11 @@ def getCenterOfContours(contours):
 		center_in = (int(center[0]),int(center[1]))
 		centerLst.append(center_in)
 	return centerLst
+
+def contourCompFun(c1,c2):
+	return cv2.contourArea(c1) - cv2.contourArea(c2)
+
+def sortContoursByArea(contours):
+	contours.sort(cmp=contourCompFun)
 
 
