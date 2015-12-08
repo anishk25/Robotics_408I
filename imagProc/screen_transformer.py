@@ -3,6 +3,8 @@ import cv2
 
 def order_points(pts):
 	ordPoints = []
+
+	'''
 	y_max_in = np.argmax(pts[:,1])
 	y_min_in = np.argmin(pts[:,1])
 	x_max_in = np.argmax(pts[:,0])
@@ -12,7 +14,10 @@ def order_points(pts):
 	ordPoints.append(tuple(pts[y_max_in]))
 	ordPoints.append(tuple(pts[x_max_in]))
 	ordPoints.append(tuple(pts[y_min_in]))
+	'''
 
+	for pt in pts:
+		ordPoints.append(tuple(pt))
 	return ordPoints
 
 def drawRectOnFrame(frame,pts):

@@ -14,7 +14,7 @@ TRANS_HEIGHT = 480
 
 
 
-videoCap = cv2.VideoCapture(0)
+videoCap = cv2.VideoCapture(1)
 videoCap.set(CV_CAP_PROP_FRAME_WIDTH,FRAME_WIDTH)
 videoCap.set(CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT)
 
@@ -37,7 +37,7 @@ GREEN_HIGH_HSV = np.array([65,255,255])
 
 def order_points(pts):
 	ordPoints = []
-	y_max_in = np.argmax(pts[:,1])
+	'''y_max_in = np.argmax(pts[:,1])
 	y_min_in = np.argmin(pts[:,1])
 	x_max_in = np.argmax(pts[:,0])
 	x_min_in = np.argmin(pts[:,0])
@@ -45,8 +45,9 @@ def order_points(pts):
 	ordPoints.append(tuple(pts[x_min_in]))
 	ordPoints.append(tuple(pts[y_max_in]))
 	ordPoints.append(tuple(pts[x_max_in]))
-	ordPoints.append(tuple(pts[y_min_in]))
-
+	ordPoints.append(tuple(pts[y_min_in]))'''
+	for pt in pts:
+		ordPoints.append(tuple(pt))
 	return ordPoints
 
 

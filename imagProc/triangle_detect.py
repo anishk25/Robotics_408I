@@ -5,8 +5,8 @@ import cv_utility as cvUtil
 import algorithms
 import sys
 
-BLUE_LOW_HSV = np.array([95,215,215])
-BLUE_HIGH_HSV = np.array([105,235,235])
+BLUE_LOW_HSV = np.array([90,170,242])
+BLUE_HIGH_HSV = np.array([100,210,255])
 
 YELLOW_LOW_HSV = np.array([35,0,240])
 YELLOW_HIGH_HSV = np.array([45,10,255])
@@ -34,7 +34,7 @@ MAX_CONTOUR_AREA = 250
 
 
 
-def drawDirectionalTriangle(img,sortedTriPts):
+def drawDirectionalTriangle(img,sortedPts):
 	 assert(len(sortedTriPts) == 3)
 	 # draw green line at base
 	 cv2.line(img,sortedPts[0],sortedPts[1],(0,255,0),2)
@@ -46,7 +46,7 @@ def drawDirectionalTriangle(img,sortedTriPts):
 selectLowHSV = BLUE_LOW_HSV
 selectHighHSV = BLUE_HIGH_HSV
 
-videoCap = cv2.VideoCapture(0)
+videoCap = cv2.VideoCapture(1)
 videoCap.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH,FRAME_WIDTH)
 videoCap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT)
 
@@ -55,21 +55,20 @@ kernel = np.ones((2,2),np.uint8)
 while(True):
 	ret,frame = videoCap.read()
 	cv2.setMouseCallback('frame',fc.frameClickEvent,frame)
-	#hsvFrame = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
-	#threshImg = cv2.inRange(hsvFrame,selectLowHSV,selectHighHSV)
-	#erodedDilImg = cv2.morphologyEx(threshImg, cv2.MORPH_OPEN, kernel)
+	hsvFrame = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
+	threshImg = cv2.inRange(hsvFrame,selectLowHSV,selectHighHSV)
 
 	
-	'''
+	
 	algorithms.largestArea = 0
 	algorithms.minPtsDistance = sys.float_info.max
-	contours = cvUtil.getContoursForColor(frame,selectLowHSV,selectHighHSV,MIN_CONTOUR_AREA,MAX_CONTOUR_AREA,True)
+	contours = cvUtil.getContoursForColor(frame,selectLowHSV,selectHighHSV,MIN_CONTOUR_AREA,MAX_CONTOUR_AREA)
 	centerLst = algorithms.removeCloseContours(contours,10)
 	cvUtil.drawCircleForPoints(frame,centerLst,5,(0,255,0),1)
 	print centerLst
-	#closestCenters = algorithms.getNClosestPoints(centerLst,4)
-	#cvUtil.drawCircleForPoints(frame,closestCenters,5,(0,255,0),1)
-	'''
+	closestCenters = algorithms.getNClosestPoints(centerLst,4)
+	cvUtil.drawCircleForPoints(frame,closestCenters,5,(0,255,0),1)
+	
 	
 	'''
 	if(closestCenters == None):
@@ -85,9 +84,7 @@ while(True):
 	#cvUtil.drawCircleForPoints(frame,closestCenters,10,(0,255,0),2)
 	'''
 
-
-	#cv2.imshow('frame',threshImg)
-	cv2.imshow('frame',frame)
+	cv2.imshow('frame2',frame)
 	if(cv2.waitKey(1) & 0xFF == ord('q')):
 		break
 	

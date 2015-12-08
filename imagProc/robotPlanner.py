@@ -53,7 +53,10 @@ while(True):
 
 	cv2.imshow('frame',frame)
 	if(transImage != None):
-		print frameProcessor.getRobotAngle()
+		frameProcessor.processFrame(transImage)
+
+		#print frameProcessor.getRobotVector()
+		print frameProcessor.getConeVector()
 		cv2.imshow('transImage',transImage)
 
 	if(cv2.waitKey(1) & 0xFF == ord('q')):

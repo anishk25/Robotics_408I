@@ -5,6 +5,7 @@ import math
 import sys
 
 largestArea = 0
+smallestArea = sys.float_info.max
 minPtsDistance = sys.float_info.max
 
 def getAreaOfCircle(radius):
@@ -31,28 +32,30 @@ def distBetweenLineAndPt(pt,linePt1,linePt2):
 
 # gets the area of a triangle
 def getAreaOfTriangle(triPts):
-	assert(len(triPts) == 3)
-	n1 = triPts[0][0]*(triPts[1][1] - triPts[2][1])
-	n2 = triPts[1][0]*(triPts[2][1] - triPts[0][1])
-	n3 = triPts[2][0]*(triPts[0][1] - triPts[1][1])
-	area = abs(n1+n2+n3)/2
-	return area
+	if(len(triPts) == 3):
+		n1 = triPts[0][0]*(triPts[1][1] - triPts[2][1])
+		n2 = triPts[1][0]*(triPts[2][1] - triPts[0][1])
+		n3 = triPts[2][0]*(triPts[0][1] - triPts[1][1])
+		area = abs(n1+n2+n3)/2
+		return area
+	return None
 
 # gets the closest point to a triangle given a set of points
 def getClosestPt(triPts, allPts):
-	assert(len(triPts) == 3 and len(allPts) >= 3)
-	allPtsLen = len(allPts)
-	pt1 = triPts[0]
-	pt2 = triPts[1]
-	minDist = sys.float_info.max
-	minPt = (-1,-1)
-	for i in range(0,allPtsLen):
-		if(allPts[i] != pt1 and allPts[i] != pt2):
-			dist = distBetweenLineAndPt(allPts[i],pt1,pt2)
-			if(dist < minDist):
-				minDist = dist
-				minPt = allPts[i]
-	return minPt
+	if(len(triPts) == 3 and len(allPts) >= 3):
+		allPtsLen = len(allPts)
+		pt1 = triPts[0]
+		pt2 = triPts[1]
+		minDist = sys.float_info.max
+		minPt = (-1,-1)
+		for i in range(0,allPtsLen):
+			if(allPts[i] != pt1 and allPts[i] != pt2):
+				dist = distBetweenLineAndPt(allPts[i],pt1,pt2)
+				if(dist < minDist):
+					minDist = dist
+					minPt = allPts[i]
+		return minPt
+	return None
 
 def largestTriangleHelper(allPointsList,trianglePtList,lrgTriPtList,currIndex,numPtsCovered):
 	if(numPtsCovered < 3):
@@ -77,16 +80,17 @@ def getLargestTriangle(allPointsList):
 
 # sorts the points in the triangle based on the distance from the base point
 def getSortedPtListInTri(basePt,triPts):
-	assert(len(triPts) == 3)
-	distDict = {}
-	for i in range(0,len(triPts)):
-		distDict[triPts[i]] = getDist(basePt,triPts[i])
+	if(len(triPts) == 3):
+		distDict = {}
+		for i in range(0,len(triPts)):
+			distDict[triPts[i]] = getDist(basePt,triPts[i])
 
-	sortedPts = sorted(distDict.items(),key=operator.itemgetter(1))
-	ptList = []
-	for item in sortedPts:
-		ptList.append(item[0])
-	return ptList
+		sortedPts = sorted(distDict.items(),key=operator.itemgetter(1))
+		ptList = []
+		for item in sortedPts:
+			ptList.append(item[0])
+		return ptList
+	return None
 
 # removes contours that are close to each other
 # given the min distance needed between each contour
