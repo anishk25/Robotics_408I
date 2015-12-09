@@ -39,7 +39,7 @@ def getContoursForColor(img,lowerBound,upperBound,minContourArea,maxContourArea,
 		dilImage = cv2.dilate(threshImg,kernel)
 		#erodedDilImg = cv2.morphologyEx(threshImg, cv2.MORPH_OPEN, kernel)
 		threshImg = dilImage
-	cv2.imshow('c_frame',threshImg)
+	#cv2.imshow('c_frame',threshImg)
 	contours, hierarchy = cv2.findContours(threshImg,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 	filterCont = filterContours(contours,minContourArea,maxContourArea)	
 	return filterCont

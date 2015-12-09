@@ -1,11 +1,12 @@
 import socket
 import re
+import scratch_that
 
 
 Obstacle = False
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect(('localhost', 31416))
+s.connect(('localhost', 31415))
 s.sendall('r'.encode())
 
 while 1:
@@ -16,7 +17,7 @@ while 1:
             heading = nums[0]
             dist = nums[1]
             print("New waypoint: Heading of " + str(heading) + ", Distance of " + str(dist))
-            #manuver(heading, dist)
+            scratch_that.go(heading, dist)
             if Obstacle:
                 s.sendall("o".encode())
             else:
