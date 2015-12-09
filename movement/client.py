@@ -6,7 +6,7 @@ import scratch_that
 Obstacle = False
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect(('localhost', 31415))
+s.connect(('192.168.1.2', 31415))
 s.sendall('r'.encode())
 
 while 1:

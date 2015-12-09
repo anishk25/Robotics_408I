@@ -92,7 +92,7 @@ def vector_to_heading(vector):
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-s.bind((socket.gethostname(), 31415))
+s.bind(('0.0.0.0', 31415))
 
 s.listen(5)
 
