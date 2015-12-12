@@ -51,6 +51,7 @@ class FrameProcessor:
 		if(len(o_contours) > 0):
 			lrgContour = cvUtil.getLargestContour(o_contours)
 			centerLst = cvUtil.getCenterOfContours([lrgContour])
+			cvUtil.drawCircleForPoints(frame,centerLst,3,(0,255,0),3)
 			return centerLst[0]
 		return None
 
@@ -76,14 +77,21 @@ class FrameProcessor:
 	def getRobotVector(self):
 		if(self.__triangleBaseCenterPt[0] == -1):
 			return None
-		return (self.__triangleTopPt[0] - self.__triangleBaseCenterPt[0],self.__triangleTopPt[1] - self.__triangleBaseCenterPt[1])
+		return (self.__triangleTopPt[0] - self.__triangleBaseCenterPt[0],(self.__triangleTopPt[1] - self.__triangleBaseCenterPt[1])*-1)
 
 	def getConeVector(self):
 		if(self.__triangleBaseCenterPt[0] == -1 or self.__coneCenter[0] == -1):
 			return None
 
-		midPt = ((self.__triangleTopPt[0] - self.__triangleBaseCenterPt[0])/2,
-				 (self.__triangleTopPt[1] - self.__triangleBaseCenterPt[1])/2)
-		return (self.__coneCenter[0]-midPt[0], self.__coneCenter[1]-midPt[1])
+		midPt = ((self.__triangleTopPt[0] + self.__triangleBaseCenterPt[0])/2,
+				 (self.__triangleTopPt[1] + self.__triangleBaseCenterPt[1])/2)
+		#midPt = self.__triangleTopPt
+		return (self.__coneCenter[0]-midPt[0], (self.__coneCenter[1]-midPt[1])*-1)
 
 
+	def getRobotPosition(self):
+		if(self.__triangleBaseCenterPt[0] == -1):
+			return None
+		midPt = ((self.__triangleTopPt[0] + self.__triangleBaseCenterPt[0])/2,
+				 (self.__triangleTopPt[1] + self.__triangleBaseCenterPt[1])/2)
+		return midPt

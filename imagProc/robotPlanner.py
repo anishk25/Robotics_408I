@@ -12,17 +12,6 @@ FRAME_HEIGHT = 480
 TRANS_WIDTH = 640
 TRANS_HEIGHT = 480
 
-pointsArr = np.zeros((4,2),dtype=np.int)
-
-quad_pts = np.zeros((4,2),dtype=np.int)
-quad_pts[0] = (0,0)
-quad_pts[1] = (TRANS_WIDTH,0)
-quad_pts[2] = (TRANS_WIDTH,TRANS_HEIGHT)
-quad_pts[3] = (0,TRANS_HEIGHT)
-
-orderedPointsLst = []
-orderedPointsArr = None
-numCorners = 0
 
 robots = []
 
@@ -30,26 +19,25 @@ first = True
 heading = None
 distance = None
 
+point = None
+hasPoint = False
+
 
 def frameClickEvent(event,x,y,flags,param):
-	global numCorners
-	global pointsArr
-	global orderedPointsLst
-	global orderedPointsArr
+	global hasPoint
+	global point
 	if event == cv2.EVENT_LBUTTONUP:
-		if(numCorners < 4):
-			print ((x,y))
-			pointsArr[numCorners] = (x,y)
-			numCorners += 1
-		else:
-			orderedPointsLst = scrTrans.order_points(pointsArr)
-			orderedPointsArr = np.array(orderedPointsLst)
-			print orderedPointsArr
+		point = (x,y)
+		hasPoint = True
+		print "Clicked at point",
+		print point
+
 
 #Takes a socket input
 def client_handler(c, addr):
 	global heading
 	global distance
+	global hasPoint
 	address, port = addr
 	send_waypoint = True
 	print('Incoming Connection')
@@ -77,10 +65,12 @@ def client_handler(c, addr):
 				dist = (distance*12.0)/(1920.0)
 				if dist > 1:
 					dist = 1.0
-				waypoint = "w" + str(h) + "," + str(dist)
-				print "Sending waypoint: " + waypoint
-				c.sendall(waypoint.encode())
-				send_waypoint = False
+				if dist > 0.41:
+					waypoint = "w" + str(h) + "," + str(dist)
+					print "Sending waypoint: " + waypoint
+					c.sendall(waypoint.encode())
+					send_waypoint = False
+					hasPoint = False
 
 
 
@@ -96,10 +86,10 @@ s.bind(('0.0.0.0', 31415))
 
 s.listen(5)
 
-# cv2.namedWindow('frame')
-# cv2.setMouseCallback('frame',frameClickEvent)
+cv2.namedWindow('frame')
+cv2.setMouseCallback('frame',frameClickEvent)
 
-videoCap = cv2.VideoCapture(0)
+videoCap = cv2.VideoCapture(1)
 videoCap.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH,FRAME_WIDTH)
 videoCap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT,FRAME_HEIGHT)
 
@@ -121,42 +111,68 @@ while(True):
 
 	#frameProcessor.processFrame(transImage)
 	frameProcessor.processFrame(frame)
-	if first:
-		cone = frameProcessor.getConeVector()
-		robot = frameProcessor.getRobotVector()
-		if cone != None and robot != None:
-			cone_vec = vector_to_heading(cone)
+
+	if hasPoint:
+		pos = frameProcessor.getRobotPosition()
+		if point != None and pos != None:
+			vec = (point[0] - pos[0], (point[1] - pos[1])*-1)
+			#print vec
+			angle = vector_to_heading(vec)
+			robot = frameProcessor.getRobotVector()
 			robot_vec = vector_to_heading(robot)
-			x, y = cone
+			x, y = vec
 			distance = (x*x + y*y)**0.5
-			heading = cone_vec - robot_vec
-			first = False
+			heading = robot_vec - angle
+			# print distance
+			#print heading
+	else:
+		if first:
+			cone = frameProcessor.getConeVector()
+			robot = frameProcessor.getRobotVector()
 			# print cone
 			# print robot
-			print cone_vec
-			print robot_vec
-			print cone_vec - robot_vec
-
-	else:
-		cone = frameProcessor.getConeVector()
-		robot = frameProcessor.getRobotVector()
-		if cone != None and robot != None:
-			x, y = cone
-			new_distance = (x*x + y*y)**0.5
-			if(abs(new_distance - distance) > 200):
+			if cone and robot:
 				cone_vec = vector_to_heading(cone)
 				robot_vec = vector_to_heading(robot)
+				x, y = cone
+				distance = (x*x + y*y)**0.5
+				heading = cone_vec - robot_vec
+				first = False
 				# print cone
 				# print robot
-				print cone_vec
-				print robot_vec
+				# print cone_vec
+				# print robot_vec
 				print cone_vec - robot_vec
-				distance = new_distance
-				heading = cone_vec - robot_vec
 
-	#print frameProcessor.getRobotVector()
-	#print frameProcessor.getConeVector()
+		else:
+			cone = frameProcessor.getConeVector()
+			robot = frameProcessor.getRobotVector()
+			# print ssobot
+			# print cone
+			# print robot
+			if cone and robot:
+				x, y = cone
+				new_distance = (x*x + y*y)**0.5
+				dist_in_feet = (new_distance*12.0)/1920.0
+				#print dist_in_feet
+				if(abs(new_distance - distance) < 200):
+					cone_vec = vector_to_heading(cone)
+					robot_vec = vector_to_heading(robot)
+					# print cone
+					# print robot
+					#print cone_vec
+					#print robot_vec
+					distance = new_distance
+					heading = robot_vec - cone_vec
+					#print heading
+
+		#print frameProcessor.getRobotVector()
+		#print frameProcessor.getConeVector()
 
 	cv2.imshow('frame',frame)
 	if(cv2.waitKey(1) & 0xFF == ord('q')):
+		s.shutdown(socket.SHUT_RDWR)
+		exit()
 		break
+	elif(cv2.waitKey(1) & 0xFF == ord('n')):
+		first = True

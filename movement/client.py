@@ -1,6 +1,6 @@
 import socket
 import re
-import scratch_that
+import movement
 
 
 Obstacle = False
@@ -17,7 +17,7 @@ while 1:
             heading = nums[0]
             dist = nums[1]
             print("New waypoint: Heading of " + str(heading) + ", Distance of " + str(dist))
-            scratch_that.go(heading, dist)
+            movement.go(heading, dist)
             if Obstacle:
                 s.sendall("o".encode())
             else:
